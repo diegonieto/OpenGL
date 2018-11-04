@@ -26,6 +26,8 @@ static void RenderSceneCB()
     // Cleans the color buffer
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glColor3f(0.0, 0.0, 1.0);
+
     // Activates the first array
     glEnableVertexAttribArray(0);
 
@@ -33,7 +35,7 @@ static void RenderSceneCB()
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    // Draw point
+    // Draw a triangle
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glDisableVertexAttribArray(0);
