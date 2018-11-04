@@ -34,7 +34,7 @@ static void RenderSceneCB()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     // Draw point
-    glDrawArrays(GL_POINTS, 0, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glDisableVertexAttribArray(0);
 
@@ -75,7 +75,9 @@ int main(int argc, char **argv)
      * Y -> ordinate. From bottom to top
      * Z -> deep. From front to back
      */
-    vertex[0] = Vertex3f(0.5f, 0.5f, 0.0f);
+    vertex[0] = Vertex3f(-1.0f, -1.0f, 0.0f);
+    vertex[1] = Vertex3f(1.0f, -1.0f, 1.0f);
+    vertex[2] = Vertex3f(0.0f, 1.0f, 0.0f);
 
     // This creates the vertex buffer
     // Generates the buffer
