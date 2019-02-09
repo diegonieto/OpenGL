@@ -2,8 +2,30 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <iostream>
+#include <string.h>
 
-// g++ main.cpp -lglut -lGL
+// Vertex shader. This will modify the vertex attributes
+static const char* pVS = "                                                    \n\
+#version 330                                                                  \n\
+                                                                              \n\
+layout (location = 0) in vec3 Position;                                       \n\
+                                                                              \n\
+void main()                                                                   \n\
+{                                                                             \n\
+    gl_Position = vec4(0.5 * Position.x, 1.0 * Position.y, Position.z, 1.0);  \n\
+}";
+
+// Fragment shared. This will modify the pixel colors
+static const char* pFS = "                                                    \n\
+#version 330                                                                  \n\
+                                                                              \n\
+out vec4 FragColor;                                                           \n\
+                                                                              \n\
+void main()                                                                   \n\
+{                                                                             \n\
+    FragColor = vec4(0.0, 0.0, 1.0, 0.8);                                     \n\
+}";
+
 
 class Vertex3f {
     public:
@@ -26,7 +48,7 @@ static void RenderSceneCB()
     // Cleans the color buffer
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glColor3f(0.0, 0.0, 1.0);
+    glColor3f(0.5, 0.0, 0.3);
 
     // Activates the first array
     glEnableVertexAttribArray(0);
@@ -41,6 +63,80 @@ static void RenderSceneCB()
     glDisableVertexAttribArray(0);
 
     glutSwapBuffers(); 
+}
+
+void addShader(GLuint shaderProgram, const char* pShaderText, GLenum shaderType)
+{
+    GLuint shaderObj = glCreateShader(shaderType);
+
+    if (shaderObj == 0) {
+        fprintf(stderr, "Error creating shader type %d\n", shaderType);
+        exit(0);
+    }
+
+    const GLchar* p[1];
+    p[0] = pShaderText;
+    GLint Lengths[1];
+    Lengths[0]= strlen(pShaderText);
+
+    /**
+      * GLuint   : handle -> OpenGL shader object
+      * GLsizei  : count  -> number of sources. In this case only one source to build the shader
+      * GLchar** : string -> array of pointers to the string sources
+      * GLint*   : length -> array of the string lenghts
+      */
+    glShaderSource(shaderObj, 1, p, Lengths);
+    glCompileShader(shaderObj);
+
+    // Verifier process
+    GLint success;
+    glGetShaderiv(shaderObj, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        GLchar InfoLog[1024];
+        glGetShaderInfoLog(shaderObj, 1024, NULL, InfoLog);
+        fprintf(stderr, "Error compiling shader type %d: '%s'\n", shaderType, InfoLog);
+        exit(1);
+    }
+
+   glAttachShader(shaderProgram, shaderObj);
+}
+
+void compileShaders()
+{
+    GLuint shaderProgram = glCreateProgram();
+
+    if (shaderProgram == 0) {
+        fprintf(stderr, "Error creating shader program\n");
+        exit(1);
+    }
+
+    // Create and attach each shader processor to the program object
+    addShader(shaderProgram, pVS, GL_VERTEX_SHADER);
+    addShader(shaderProgram, pFS, GL_FRAGMENT_SHADER);
+
+    GLint Success = 0;
+    GLchar ErrorLog[1024] = { 0 };
+
+    glLinkProgram(shaderProgram);
+
+    // Verify shaders
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &Success);
+	if (Success == 0) {
+		glGetProgramInfoLog(shaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+		fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
+        exit(1);
+	}
+
+    glValidateProgram(shaderProgram);
+    glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &Success);
+    if (!Success) {
+        glGetProgramInfoLog(shaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+        fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
+        exit(1);
+    }
+
+    // Install the program object as part of current rendering state
+    glUseProgram(shaderProgram);
 }
 
 int main(int argc, char **argv)
@@ -88,6 +184,8 @@ int main(int argc, char **argv)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // Sets the buffer data 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+
+    compileShaders();
 
     // Gives the control to the GLUT loop
     glutMainLoop();
