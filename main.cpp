@@ -1,3 +1,4 @@
+#include <math.h>
 #include <GL/glew.h> 
 #include <GL/glut.h>
 #include <stdio.h>
@@ -10,9 +11,11 @@ static const char* pVS = "                                                    \n
                                                                               \n\
 layout (location = 0) in vec3 Position;                                       \n\
                                                                               \n\
+uniform float glScale;                                                        \n\
+                                                                              \n\
 void main()                                                                   \n\
 {                                                                             \n\
-    gl_Position = vec4(0.5 * Position.x, 1.0 * Position.y, Position.z, 1.0);  \n\
+    gl_Position = vec4(glScale * Position.x, Position.y, Position.z, 1.0);    \n\
 }";
 
 // Fragment shared. This will modify the pixel colors
@@ -42,11 +45,18 @@ class Vertex3f {
 
 Vertex3f vertex[3];
 GLuint VBO;
+GLfloat gScaleLocation;
 
 static void RenderSceneCB()
 {
     // Cleans the color buffer
     glClear(GL_COLOR_BUFFER_BIT);
+
+    static float scale = 0.0f;
+
+    scale += 0.01;
+
+    glUniform1f(gScaleLocation, sinf(scale));
 
     glColor3f(0.5, 0.0, 0.3);
 
@@ -137,6 +147,10 @@ void compileShaders()
 
     // Install the program object as part of current rendering state
     glUseProgram(shaderProgram);
+
+    // Links the shader uniform variable with the defined one here which is
+    // incremented on the render function
+    gScaleLocation = glGetUniformLocation(shaderProgram, "glScale");
 }
 
 int main(int argc, char **argv)
@@ -152,8 +166,9 @@ int main(int argc, char **argv)
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Tutorial 01"); 
 
-    // Registering callback
+    // Registering callback for display
     glutDisplayFunc(RenderSceneCB); 
+    glutIdleFunc(RenderSceneCB); 
 
     // Initialize GLew
     GLenum res = glewInit();
