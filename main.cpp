@@ -11,11 +11,13 @@ static const char* pVS = "                                                    \n
                                                                               \n\
 layout (location = 0) in vec3 Position;                                       \n\
                                                                               \n\
-uniform float glScale;                                                        \n\
+//uniform float glScale;                                                        \n\
+uniform mat4 gWorld;                                                        \n\
                                                                               \n\
 void main()                                                                   \n\
 {                                                                             \n\
-    gl_Position = vec4(glScale * Position.x, Position.y, Position.z, 1.0);    \n\
+    //gl_Position = vec4(glScale * Position.x, Position.y, Position.z, 1.0);    \n\
+    gl_Position = gWorld * vec4(Position, 1.0);    \n\
 }";
 
 // Fragment shared. This will modify the pixel colors
@@ -43,8 +45,14 @@ class Vertex3f {
             x(x), y(y), z(z) {}
 };
 
+struct Matrix4f
+{
+    float m[4][4];
+};
+
 Vertex3f vertex[3];
 GLuint VBO;
+GLuint gWorldLocation;
 GLfloat gScaleLocation;
 
 static void RenderSceneCB()
@@ -55,8 +63,17 @@ static void RenderSceneCB()
     static float scale = 0.0f;
 
     scale += 0.01;
-
     glUniform1f(gScaleLocation, sinf(scale));
+
+    Matrix4f World;
+
+    World.m[0][0] = 1.0f; World.m[0][1] = 0.0f; World.m[0][2] = 0.0f; World.m[0][3] = sinf(scale);
+    World.m[1][0] = 0.0f; World.m[1][1] = 1.0f; World.m[1][2] = 0.0f; World.m[1][3] = cosf(scale);
+    World.m[2][0] = 0.0f; World.m[2][1] = 0.0f; World.m[2][2] = 1.0f; World.m[2][3] = 0.0f;
+    World.m[3][0] = 0.0f; World.m[3][1] = 0.0f; World.m[3][2] = 0.0f; World.m[3][3] = 1.0f;
+
+
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]);
 
     glColor3f(0.5, 0.0, 0.3);
 
