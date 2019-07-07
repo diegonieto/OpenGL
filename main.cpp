@@ -67,8 +67,8 @@ static void RenderSceneCB()
 
     Matrix4f World;
 
-    World.m[0][0] = 1.0f; World.m[0][1] = 0.0f; World.m[0][2] = 0.0f; World.m[0][3] = sinf(scale);
-    World.m[1][0] = 0.0f; World.m[1][1] = 1.0f; World.m[1][2] = 0.0f; World.m[1][3] = cosf(scale);
+    World.m[0][0] = cosf(scale); World.m[0][1] = -sinf(scale); World.m[0][2] = 0.0f; World.m[0][3] = sinf(scale);
+    World.m[1][0] = sinf(scale); World.m[1][1] = cosf(scale); World.m[1][2] = 0.0f; World.m[1][3] = cosf(scale);
     World.m[2][0] = 0.0f; World.m[2][1] = 0.0f; World.m[2][2] = 1.0f; World.m[2][3] = 0.0f;
     World.m[3][0] = 0.0f; World.m[3][1] = 0.0f; World.m[3][2] = 0.0f; World.m[3][3] = 1.0f;
 
@@ -205,9 +205,9 @@ int main(int argc, char **argv)
      * Y -> ordinate. From bottom to top
      * Z -> deep. From front to back
      */
-    vertex[0] = Vertex3f(-1.0f, -1.0f, 0.0f);
-    vertex[1] = Vertex3f(1.0f, -1.0f, 1.0f);
-    vertex[2] = Vertex3f(0.0f, 1.0f, 0.0f);
+    vertex[0] = Vertex3f(-0.1f, -0.1f, 0.0f);
+    vertex[1] = Vertex3f(0.1f, -0.1f, 1.0f);
+    vertex[2] = Vertex3f(0.0f, 0.1f, 0.0f);
 
     // This creates the vertex buffer
     // Generates the buffer
